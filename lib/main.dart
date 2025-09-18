@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive_flutter/adapters.dart';
+import 'package:itinera_ai/core/app_router.dart';
+import 'package:itinera_ai/core/app_theme.dart';
+import 'package:itinera_ai/screen/signUp/bloc/signup_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Hive for local storage
-  await Hive.initFlutter();
+  // // Initialize Hive for local storage
+  // await Hive.initFlutter();
   // Hive.registerAdapter(TripModelAdapter());
-  await Hive.openBox('trips');
-  await Hive.openBox('settings');
+  // await Hive.openBox('trips');
+  // await Hive.openBox('settings');
 
-  runApp(
-    MultiBlocProvider(providers: [], child: const ItineraApp())
-  );
+  runApp(const ItineraApp());
 }
 
 class ItineraApp extends StatelessWidget {
@@ -21,13 +21,16 @@ class ItineraApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Itinera AI',
-      debugShowCheckedModeBanner: false,
-      // theme: AppTheme.lightTheme,
-      // darkTheme: AppTheme.darkTheme,
-      // themeMode: ThemeMode.system,
-      // routerConfig: AppRouter.router,
+    return MultiBlocProvider(
+      providers: [BlocProvider<SignupBloc>(create: (context) => SignupBloc())],
+      child: MaterialApp.router(
+        title: 'Itinera AI',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        routerConfig: AppRouter.router,
+      ),
     );
   }
 }
