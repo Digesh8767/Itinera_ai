@@ -496,6 +496,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0"
+  gemini_ai:
+    dependency: "direct main"
+    description:
+      name: gemini_ai
+      sha256: "3a14f7b68750255fca099e207aa76bae0356179a03d8f26bf6a65b31f42c61be"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   geolocator:
     dependency: "direct main"
     description:
@@ -568,6 +576,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.3.0"
+  google_generative_ai:
+    dependency: "direct main"
+    description:
+      name: google_generative_ai
+      sha256: "71f613d0247968992ad87a0eb21650a566869757442ba55a31a81be6746e0d1f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.7"
   google_identity_services_web:
     dependency: transitive
     description:
@@ -844,10 +860,10 @@ packages:
     dependency: transitive
     description:
       name: mime
-      sha256: "41a20518f0cb1256669420fdba0cd90d21561e560ac240f26ef8322e45bb7ed6"
+      sha256: "801fd0b26f14a4a58ccb09d5892c3fbdeff209594300a542492cf13fba9d247a"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "1.0.6"
   mocktail:
     dependency: transitive
     description:
@@ -905,7 +921,7 @@ packages:
     source: hosted
     version: "1.1.0"
   path_provider:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path_provider
       sha256: "50c5dd5b6e1aaf6fb3a78b33f6aa3afca52bf903a8a5298f53101fdaee55bbcd"
@@ -952,6 +968,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  pedantic:
+    dependency: transitive
+    description:
+      name: pedantic
+      sha256: "67fc27ed9639506c856c840ccce7594d0bdcd91bc8d53d6e52359449a1d50602"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.11.1"
   permission_handler:
     dependency: "direct main"
     description:
@@ -1072,6 +1096,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  share_plus:
+    dependency: "direct main"
+    description:
+      name: share_plus
+      sha256: "3ef39599b00059db0990ca2e30fca0a29d8b37aae924d60063f8e0184cf20900"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.2.2"
+  share_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: share_plus_platform_interface
+      sha256: "251eb156a8b5fa9ce033747d73535bf53911071f8d3b6f4f0b578505ce0d4496"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.4.0"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1213,6 +1253,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.0"
+  speech_to_text:
+    dependency: "direct main"
+    description:
+      name: speech_to_text
+      sha256: c07557664974afa061f221d0d4186935bea4220728ea9446702825e8b988db04
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.3.0"
+  speech_to_text_platform_interface:
+    dependency: transitive
+    description:
+      name: speech_to_text_platform_interface
+      sha256: a1935847704e41ee468aad83181ddd2423d0833abe55d769c59afca07adb5114
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.0"
+  speech_to_text_windows:
+    dependency: transitive
+    description:
+      name: speech_to_text_windows
+      sha256: "2c9846d18253c7bbe059a276297ef9f27e8a2745dead32192525beb208195072"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0+beta.8"
   sprintf:
     dependency: transitive
     description:
@@ -1501,6 +1565,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.1"
+  win32:
+    dependency: transitive
+    description:
+      name: win32
+      sha256: daf97c9d80197ed7b619040e86c8ab9a9dad285e7671ee7390f9180cc828a51e
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.10.1"
   xdg_directories:
     dependency: transitive
     description:

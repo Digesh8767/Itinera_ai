@@ -5,8 +5,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:itinera_ai/core/app_router.dart';
 import 'package:itinera_ai/core/app_theme.dart';
+import 'package:itinera_ai/screen/createing/bloc/creating_bloc.dart';
 import 'package:itinera_ai/screen/home/bloc/home_bloc.dart';
+import 'package:itinera_ai/screen/itinerary_process/bloc/itinerary_process_bloc.dart';
 import 'package:itinera_ai/screen/login/bloc/login_bloc.dart';
+import 'package:itinera_ai/screen/profile/bloc/profile_bloc.dart';
 import 'package:itinera_ai/screen/signUp/bloc/signup_bloc.dart';
 import 'package:itinera_ai/services/firebase_options.dart';
 
@@ -48,6 +51,15 @@ class ItineraApp extends StatelessWidget {
         BlocProvider<LoginBloc>(create: (context) => LoginBloc()),
         BlocProvider<HomeBloc>(
           create: (context) => HomeBloc(),
+        ),
+        BlocProvider<ProfileBloc>(
+          create: (context) => ProfileBloc(),
+        ),
+        BlocProvider<CreatingBloc>(
+          create: (context) => CreatingBloc(),
+        ),
+        BlocProvider<ItineraryProcessBloc>(
+          create: (context) => ItineraryProcessBloc(),
         ),
       ],
       child: MaterialApp.router(
