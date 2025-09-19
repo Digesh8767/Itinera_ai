@@ -1,6 +1,6 @@
 part of 'signup_bloc.dart';
 
-sealed class SignupState extends Equatable {
+abstract class SignupState extends Equatable {
   const SignupState();
 
   @override
@@ -11,11 +11,16 @@ class SignupInitial extends SignupState {}
 
 class SignupLoading extends SignupState {}
 
+class GoogleSignupLoading extends SignupState {}
+
 class SignupSuccess extends SignupState {
   final String message;
   final String userId;
 
-  const SignupSuccess({required this.message, required this.userId});
+  const SignupSuccess({
+    required this.message,
+    required this.userId,
+  });
 
   @override
   List<Object> get props => [message, userId];
@@ -34,7 +39,10 @@ class GoogleSignupSuccess extends SignupState {
   final String message;
   final String userId;
 
-  const GoogleSignupSuccess({required this.message, required this.userId});
+  const GoogleSignupSuccess({
+    required this.message,
+    required this.userId,
+  });
 
   @override
   List<Object> get props => [message, userId];
@@ -42,6 +50,7 @@ class GoogleSignupSuccess extends SignupState {
 
 class GoogleSignupFailure extends SignupState {
   final String message;
+
   const GoogleSignupFailure({required this.message});
 
   @override

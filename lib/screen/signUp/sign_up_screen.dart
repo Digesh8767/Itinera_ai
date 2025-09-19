@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:itinera_ai/core/app_image.dart';
+import 'package:itinera_ai/screen/home/home_screen.dart';
+import 'package:itinera_ai/screen/login/login_screen.dart';
 import 'package:itinera_ai/screen/signUp/bloc/signup_bloc.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -34,7 +37,6 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final height = size.height;
-    final width = size.width;
     return Scaffold(
       backgroundColor: Color(0xFFF5F5F7),
       body: SafeArea(
@@ -97,17 +99,14 @@ class _SignupScreenState extends State<SignupScreen> {
                           color: Color(0xFFFFFFFF),
                         ),
                         padding: EdgeInsets.symmetric(vertical: 16),
-
                         child: InkWell(
-                          onTap:
-                              state is SignupLoading
-                                  ? null
-                                  : _handleGoogleSignUp,
+                          onTap: state is GoogleSignupLoading
+                              ? null
+                              : _handleGoogleSignUp,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              if (state is SignupLoading &&
-                                  state is! GoogleSignupSuccess)
+                              if (state is GoogleSignupLoading)
                                 Center(
                                   child: SizedBox(
                                     width: 20,
@@ -160,13 +159,16 @@ class _SignupScreenState extends State<SignupScreen> {
                         endIndent: 18,
                       ),
                     ),
-                    Text(
-                      "or Sign up with Email",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: GoogleFonts.inter().fontFamily,
-                        color: Color(0xFF8F95B2),
+                    GestureDetector(
+                      onTap: () => context.pushReplacement(LoginScreen.path),
+                      child: Text(
+                        "or Sign up with Email",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: GoogleFonts.inter().fontFamily,
+                          color: Color(0xFF8F95B2),
+                        ),
                       ),
                     ),
                     Expanded(
@@ -212,7 +214,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     label: "Password",
                     hint: "Enter your password",
                     prefixIcon: Icons.lock_outline,
-                    obscureText: _isPasswordVisible,
+                    obscureText: !_isPasswordVisible,
                     suffixIcon: GestureDetector(
                       onTap: () {
                         setState(() {
@@ -249,7 +251,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     label: "Confirm Password",
                     hint: "Confirm your password",
                     prefixIcon: Icons.lock_outline,
-                    obscureText: _isConfirmPasswordVisible,
+                    obscureText: !_isConfirmPasswordVisible,
                     suffixIcon: GestureDetector(
                       onTap: () {
                         setState(() {
@@ -288,7 +290,8 @@ class _SignupScreenState extends State<SignupScreen> {
                           backgroundColor: Colors.green,
                         ),
                       );
-                      // Navigate to next Screen or reset form
+                      // Navigate to home screen
+                      context.go(HomeScreen.path);
                     } else if (state is GoogleSignupSuccess) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -296,6 +299,8 @@ class _SignupScreenState extends State<SignupScreen> {
                           backgroundColor: Colors.green,
                         ),
                       );
+                      // Navigate to home screen
+                      context.go(HomeScreen.path);
                     } else if (state is SignupFailure) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -325,24 +330,23 @@ class _SignupScreenState extends State<SignupScreen> {
                         borderRadius: BorderRadius.circular(16),
                         onTap: state is SignupLoading ? null : _handleSignUp,
                         child: Center(
-                          child:
-                              state is SignupLoading
-                                  ? SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                  : Text(
-                                    "Sign UP",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFFFFFAF7),
-                                    ),
+                          child: state is SignupLoading
+                              ? SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
                                   ),
+                                )
+                              : Text(
+                                  "Sign UP",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFFFFFAF7),
+                                  ),
+                                ),
                         ),
                       ),
                     );
@@ -422,25 +426,16 @@ class _SignupScreenState extends State<SignupScreen> {
   void _handleSignUp() {
     if (_formKey.currentState!.validate()) {
       context.read<SignupBloc>().add(
-        SignupWithEmailEvent(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-          confirmPassword: _confirmPasswordController.text,
-        ),
-      );
+            SignupWithEmailEvent(
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+              confirmPassword: _confirmPasswordController.text,
+            ),
+          );
     }
   }
 
   void _handleGoogleSignUp() {
     context.read<SignupBloc>().add(SignupWithGoogleEvent());
-  }
-
-  void _resetForm() {
-    _emailController.clear();
-    _passwordController.clear();
-    _confirmPasswordController.clear();
-    setState(() {
-      context.read<SignupBloc>().add(ResetSignupStateEvent());
-    });
   }
 }

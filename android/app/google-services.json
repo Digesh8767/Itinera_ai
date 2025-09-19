@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "440298503063",
+    "project_id": "itinera-ai-17bb9",
+    "storage_bucket": "itinera-ai-17bb9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:440298503063:android:8faa9d6ee08e31021862d2",
+        "android_client_info": {
+          "package_name": "com.example.itinera_ai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "440298503063-e6j90hc2p8f04hbsa2l8hqevlp1cej7b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.itinera_ai",
+            "certificate_hash": "f700b0c25bacd3799bae00ec19fcf584a745a22d"
+          }
+        },
+        {
+          "client_id": "440298503063-h50ikuc165hbedj70ll65qjafaouqrij.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANkapAIyWUhL_XijZtyz2VR_fFxXKvYoE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "440298503063-h50ikuc165hbedj70ll65qjafaouqrij.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

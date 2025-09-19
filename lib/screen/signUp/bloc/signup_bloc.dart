@@ -1,6 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/widgets.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:itinera_ai/services/firebase_auth_service.dart';
+import 'package:itinera_ai/services/firestore_service.dart';
 
 part 'signup_event.dart';
 part 'signup_state.dart';
@@ -16,7 +18,7 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
     SignupWithEmailEvent event,
     Emitter<SignupState> emit,
   ) async {
-    emit(SignupLoading());
+    emit(GoogleSignupLoading());
 
     try {
       // Validate passwords match
@@ -37,16 +39,35 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
         return;
       }
 
-      // Simulate API call
-      await Future.delayed(Duration(seconds: 2));
-
-      // Mock successful signup
-      emit(
-        SignupSuccess(
-          message: 'Account created successfully!',
-          userId: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        ),
+      // create account with firebase
+      final UserCredential? userCredential =
+          await FirebaseAuthService.createUserWithEmailAndPassword(
+        email: event.email,
+        password: event.password,
       );
+
+      if (userCredential?.user != null) {
+        final user = userCredential!.user!;
+
+        // Create user profile in Firestore
+        await FirestoreService.createUserProfile(
+          uid: user.uid,
+          email: user.email!,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+        );
+
+        // Mock successful signup
+        emit(
+          SignupSuccess(
+            message: 'Account created successfully!',
+            userId: user.uid,
+          ),
+        );
+      } else {
+        emit(SignupFailure(
+            message: 'Account creation failed. Please try again.'));
+      }
     } catch (e) {
       emit(
         SignupFailure(message: 'An unexpected error occurred: ${e.toString()}'),
@@ -58,19 +79,34 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
     SignupWithGoogleEvent event,
     Emitter<SignupState> emit,
   ) async {
-    emit(SignupLoading());
+    emit(GoogleSignupLoading());
 
     try {
       // Simulate Google signup
-      await Future.delayed(Duration(seconds: 2));
+      final UserCredential? userCredential =
+          await FirebaseAuthService.signInWithGoogle();
 
-      // Mock successful Google signup
-      emit(
-        GoogleSignupSuccess(
-          message: 'Google signup successful!',
-          userId: 'google_user_${DateTime.now().millisecondsSinceEpoch}',
-        ),
-      );
+      if (userCredential?.user != null) {
+        final user = userCredential!.user!;
+
+        // Create user profile in Firestore
+        await FirestoreService.createUserProfile(
+            uid: user.uid,
+            email: user.email!,
+            displayName: user.displayName,
+            photoURL: user.photoURL);
+
+        // Mock successful Google signup
+        emit(
+          GoogleSignupSuccess(
+            message: 'Google signup successful!',
+            userId: user.uid,
+          ),
+        );
+      } else {
+        emit(GoogleSignupFailure(
+            message: 'Google signup failed. Please try again.'));
+      }
     } catch (e) {
       emit(
         GoogleSignupFailure(message: 'Google signup Failed: ${e.toString()}'),
@@ -83,6 +119,5 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
     Emitter<SignupState> emit,
   ) {
     emit(SignupInitial());
-    
   }
 }
