@@ -11,7 +11,7 @@ import 'package:itinera_ai/screen/creating_itinerary/creating_itinerary_screen.d
 import 'package:itinera_ai/screen/profile/profile_screen.dart';
 import 'package:itinera_ai/services/firebase_auth_service.dart';
 import 'package:itinera_ai/services/offline_service_storage.dart';
-import 'package:speech_to_text/speech_to_text.dart';
+import 'package:itinera_ai/services/speech_to_text_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -41,38 +41,39 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   ];
 
   // Speech-to-text
-  final SpeechToText _stt = SpeechToText();
+  final SpeechToTextService _speechService = SpeechToTextService();
   bool _isListening = false;
 
   Future<void> _toggleMic() async {
-    if (_isListening) {
-      await _stt.stop();
-      setState(() => _isListening = false);
-      return;
-    }
-    final available = await _stt.initialize();
-    if (!available) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Speech recognition not available on this device')),
+    try {
+      print('🎤 Home: Toggling microphone...');
+      await _speechService.toggleListening(
+        onResult: (text) {
+          print('🎤 Home: Speech result received: "$text"');
+          setState(() {
+            _tripController.text = text;
+            _tripController.selection = TextSelection.fromPosition(
+              TextPosition(offset: _tripController.text.length),
+            );
+            _isListening = _speechService.isListening;
+          });
+        },
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 3),
+        partialResults: true,
+        localeId: 'en_US',
       );
-      return;
+      setState(() {
+        _isListening = _speechService.isListening;
+      });
+      print('🎤 Home: Microphone toggled, listening: $_isListening');
+    } catch (e) {
+      print('🎤 Home: Speech recognition error: $e');
+      _speechService.showErrorSnackBar(
+        context,
+        'Microphone permission required for speech recognition. Please enable it in settings.',
+      );
     }
-    setState(() => _isListening = true);
-    await _stt.listen(
-      onResult: (r) {
-        setState(() {
-          _tripController.text = r.recognizedWords;
-          _tripController.selection = TextSelection.fromPosition(
-            TextPosition(offset: _tripController.text.length),
-          );
-        });
-      },
-      listenFor: const Duration(seconds: 30),
-      pauseFor: const Duration(seconds: 3),
-      partialResults: true,
-      localeId: 'en_US',
-    );
   }
 
   @override

@@ -137,6 +137,10 @@ class CreatingItineraryBloc
             completedState.itinerary);
         emit(CreatingItinerarySuccess(
             message: 'Itinerary saved offline successfully!'));
+      } else {
+        // If itinerary is not completed, don't emit error, just ignore
+        // The UI should prevent this from happening anyway
+        return;
       }
     } catch (e) {
       emit(CreatingItineraryError(

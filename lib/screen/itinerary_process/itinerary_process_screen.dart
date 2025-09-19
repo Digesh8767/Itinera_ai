@@ -442,39 +442,54 @@ class _ItineraryProcessScreenState extends State<ItineraryProcessScreen> {
 
                   // Open in Maps
                   Container(
-                    color: Color(0xFFF5F5F7),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 15.0,
+                    decoration: BoxDecoration(
+                      color: Color(0xFFF5F5F7),
+                      borderRadius: BorderRadius.circular(10),
                     ),
+                    padding: const EdgeInsets.symmetric(),
                     child: GestureDetector(
                       onTap: () => context.read<ItineraryProcessBloc>().add(
                             const OpenInMapsEvent(),
                           ),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Row(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Row(
+                              children: [
+                                Text(
+                                  '📍',
+                                  style: TextStyle(
+                                    color: Color(0xFF3D90F5),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const Text(
+                                  ' Open in maps ',
+                                  style: TextStyle(
+                                    color: Color(0xFF3D90F5),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.open_in_new,
+                                  color: Color(0xFF3D90F5),
+                                  size: 16,
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
                             Text(
-                              '📍',
-                              style: TextStyle(
-                                color: Color(0xFF3D90F5),
-                                fontSize: 14,
-                              ),
-                            ),
-                            const Text(
-                              ' Open in maps ',
-                              style: TextStyle(
-                                color: Color(0xFF3D90F5),
-                                fontSize: 16,
+                              'Mumbai to Bali, Indonesia | 11hrs 5mins',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: Colors.black,
                                 fontWeight: FontWeight.w500,
-                                decoration: TextDecoration.underline,
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.open_in_new,
-                              color: Color(0xFF3D90F5),
-                              size: 16,
                             ),
                           ],
                         ),

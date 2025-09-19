@@ -27,7 +27,6 @@ class _CreatingItineraryScreenState extends State<CreatingItineraryScreen>
     with TickerProviderStateMixin {
   late AnimationController _progressController;
   late AnimationController _pulseController;
-  late Animation<double> _progressAnimation;
   late Animation<double> _pulseAnimation;
 
   @override
@@ -43,14 +42,6 @@ class _CreatingItineraryScreenState extends State<CreatingItineraryScreen>
       duration: const Duration(seconds: 1),
       vsync: this,
     );
-
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeInOut,
-    ));
 
     _pulseAnimation = Tween<double>(
       begin: 0.8,
@@ -435,44 +426,31 @@ class _CreatingItineraryScreenState extends State<CreatingItineraryScreen>
     );
   }
 
-  String _getProgressText(CreatingItineraryState state) {
-    if (state is CreatingItineraryProgress) {
-      switch (state.stage) {
-        case CreatingStage.analyzing:
-          return 'Analyzing your request...';
-        case CreatingStage.researching:
-          return 'Researching destinations...';
-        case CreatingStage.planning:
-          return 'Planning activities...';
-        case CreatingStage.optimizing:
-          return 'Optimizing routes...';
-        case CreatingStage.finalizing:
-          return 'Finalizing your itinerary...';
-      }
-    }
-    return 'Curating a perfect plan for you...';
-  }
-
   Widget _buildActionButtons(CreatingItineraryState state) {
+    final isCompleted = state is CreatingItineraryCompleted;
+
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          if (state is CreatingItineraryCompleted)
-            _buildBottomTripInfo(state.itinerary),
-          if (state is CreatingItineraryCompleted) const SizedBox(height: 16),
+          if (isCompleted) _buildBottomTripInfo(state.itinerary),
+          if (isCompleted) const SizedBox(height: 16),
           // Follow up to refine button
           SizedBox(
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
-              onPressed: state is CreatingItineraryCompleted
-                  ? () => _navigateToFollowUp(state.itinerary)
-                  : null,
+              onPressed: isCompleted
+                  ? () {
+                      // ignore: unnecessary_cast
+                      final completedState =
+                          state as CreatingItineraryCompleted;
+                      _navigateToFollowUp(completedState.itinerary);
+                    }
+                  : () => _showNotReadyMessage(),
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.resolveWith((s) {
-                  if (state is CreatingItineraryCompleted)
-                    return const Color(0xFF065F46);
+                  if (isCompleted) return const Color(0xFF065F46);
                   return const Color(0xFFCFE3DA);
                 }),
                 foregroundColor: MaterialStateProperty.all(Colors.white),
@@ -487,7 +465,7 @@ class _CreatingItineraryScreenState extends State<CreatingItineraryScreen>
                 children: [
                   Icon(
                     Icons.chat_bubble_outline,
-                    color: Colors.white,
+                    color: isCompleted ? Colors.white : Colors.grey[600],
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -496,7 +474,7 @@ class _CreatingItineraryScreenState extends State<CreatingItineraryScreen>
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: isCompleted ? Colors.white : Colors.grey[600],
                     ),
                   ),
                 ],
@@ -506,17 +484,20 @@ class _CreatingItineraryScreenState extends State<CreatingItineraryScreen>
           const SizedBox(height: 16),
           // Save offline button
           GestureDetector(
-            onTap: state is CreatingItineraryCompleted
-                ? () => _saveOffline(state.itinerary)
-                : null,
+            onTap: isCompleted
+                ? () {
+                    // ignore: unnecessary_cast
+                    final completedState = state as CreatingItineraryCompleted;
+                    _saveOffline(completedState.itinerary);
+                  }
+                : () => _showNotReadyMessage(),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   Icons.download,
-                  color: state is CreatingItineraryCompleted
-                      ? const Color(0xFF3BAB8C)
-                      : Colors.grey[400],
+                  color:
+                      isCompleted ? const Color(0xFF3BAB8C) : Colors.grey[400],
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -525,7 +506,7 @@ class _CreatingItineraryScreenState extends State<CreatingItineraryScreen>
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: state is CreatingItineraryCompleted
+                    color: isCompleted
                         ? const Color(0xFF3BAB8C)
                         : Colors.grey[400],
                   ),
@@ -590,14 +571,44 @@ class _CreatingItineraryScreenState extends State<CreatingItineraryScreen>
   }
 
   void _navigateToFollowUp(Map<String, dynamic> itinerary) {
-    final itineraryJson = Uri.encodeComponent(json.encode(itinerary));
-    context.go(
-      '${FollowUpRefinementScreen.path}?prompt=${Uri.encodeComponent(widget.tripDescription)}&itinerary=$itineraryJson',
-    );
+    // Only proceed if we have a valid itinerary
+    if (itinerary.isNotEmpty) {
+      final itineraryJson = Uri.encodeComponent(json.encode(itinerary));
+      context.go(
+        '${FollowUpRefinementScreen.path}?prompt=${Uri.encodeComponent(widget.tripDescription)}&itinerary=$itineraryJson',
+      );
+    } else {
+      _showNotReadyMessage();
+    }
   }
 
   void _saveOffline(Map<String, dynamic> itinerary) {
-    // This will be handled by the BLoC
-    context.read<CreatingItineraryBloc>().add(const SaveOfflineEvent());
+    // Only proceed if we have a valid itinerary
+    if (itinerary.isNotEmpty) {
+      context.read<CreatingItineraryBloc>().add(const SaveOfflineEvent());
+    } else {
+      _showNotReadyMessage();
+    }
+  }
+
+  void _showNotReadyMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Please wait for the itinerary to be created first!',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: const Color(0xFFFF6B35),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
   }
 }

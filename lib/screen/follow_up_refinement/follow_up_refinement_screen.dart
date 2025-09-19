@@ -9,6 +9,8 @@ import 'package:itinera_ai/core/screen_utils.dart';
 import 'package:itinera_ai/screen/follow_up_refinement/bloc/follow_up_refinement_bloc.dart';
 import 'package:itinera_ai/screen/home/home_screen.dart';
 import 'package:itinera_ai/services/firebase_auth_service.dart';
+import 'package:itinera_ai/services/speech_to_text_service.dart';
+import 'package:itinera_ai/widgets/speech_test_widget.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -31,9 +33,8 @@ class FollowUpRefinementScreen extends StatefulWidget {
 class _FollowUpRefinementScreenState extends State<FollowUpRefinementScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final SpeechToText _speechToText = SpeechToText();
+  final SpeechToTextService _speechService = SpeechToTextService();
   bool _isListening = false;
-  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -51,37 +52,50 @@ class _FollowUpRefinementScreenState extends State<FollowUpRefinementScreen> {
   }
 
   Future<void> _initializeSpeech() async {
-    bool available = await _speechToText.initialize();
-    setState(() {
-      _isInitialized = available;
-    });
+    print('🎤 Follow-up: Initializing speech service...');
+    final result = await _speechService.initialize();
+    print('🎤 Follow-up: Speech service initialized: $result');
   }
 
   void _startListening() async {
-    if (!_isInitialized) return;
-
-    setState(() {
-      _isListening = true;
-    });
-
-    await _speechToText.listen(
-      onResult: (result) {
-        setState(() {
-          _messageController.text = result.recognizedWords;
-        });
-      },
-      listenFor: const Duration(seconds: 30),
-      pauseFor: const Duration(seconds: 3),
-      partialResults: true,
-      localeId: 'en_US',
-    );
+    try {
+      print('🎤 Starting speech recognition...');
+      await _speechService.startListening(
+        onResult: (text) {
+          print('🎤 Speech result received: "$text"');
+          setState(() {
+            _messageController.text = text;
+            _messageController.selection = TextSelection.fromPosition(
+              TextPosition(offset: text.length),
+            );
+            _isListening = _speechService.isListening;
+          });
+        },
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 3),
+        partialResults: true,
+        localeId: 'en_US',
+      );
+      setState(() {
+        _isListening = _speechService.isListening;
+      });
+      print('🎤 Speech recognition started, listening: $_isListening');
+    } catch (e) {
+      print('🎤 Speech recognition error: $e');
+      _speechService.showErrorSnackBar(
+        context,
+        'Microphone permission required for speech recognition. Please enable it in settings.',
+      );
+    }
   }
 
-  void _stopListening() {
-    _speechToText.stop();
+  void _stopListening() async {
+    print('🎤 Stopping speech recognition...');
+    await _speechService.stopListening();
     setState(() {
-      _isListening = false;
+      _isListening = _speechService.isListening;
     });
+    print('🎤 Speech recognition stopped, listening: $_isListening');
   }
 
   void _sendMessage() {
@@ -138,7 +152,7 @@ class _FollowUpRefinementScreenState extends State<FollowUpRefinementScreen> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
-    _speechToText.cancel();
+    _speechService.cancel();
     super.dispose();
   }
 
@@ -189,39 +203,43 @@ class _FollowUpRefinementScreenState extends State<FollowUpRefinementScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE5E5E5), width: 1),
-        ),
+        color: Color(0xFFFFFAF7),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            onPressed: () => context.go(HomeScreen.path),
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-          ),
-          Expanded(
-            child: Text(
-              '7 days in Bali...',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
+          Row(
+            children: [
+              IconButton(
+                onPressed: () => context.go(HomeScreen.path),
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: const Color(0xFF3BAB8C),
-            child: Text(
-              _getUserInitial(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+              Text(
+                '7 days in Bali...',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
+            ],
+          ),
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: const Color(0xFF3BAB8C),
+                child: Text(
+                  _getUserInitial(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -389,7 +407,7 @@ class _FollowUpRefinementScreenState extends State<FollowUpRefinementScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: ScreenUtils.height * 0.014),
                   Text(
                     'Can you also include skuba-diving in the Itinerary i wanna try it!',
                     style: GoogleFonts.inter(
@@ -463,7 +481,7 @@ class _FollowUpRefinementScreenState extends State<FollowUpRefinementScreen> {
                 ),
               ],
             ),
-            SizedBox(height: ScreenUtils.height * 0.008),
+            SizedBox(height: ScreenUtils.height * 0.014),
             Text(
               message,
               style: GoogleFonts.inter(
@@ -580,19 +598,10 @@ class _FollowUpRefinementScreenState extends State<FollowUpRefinementScreen> {
             ),
             SizedBox(height: 8),
             Text(
-              'Mumbai to Bali, Indonesia',
+              'Mumbai to Bali, Indonesia | 11hrs 5mins',
               style: GoogleFonts.inter(
                 fontSize: 12,
-                color: Colors.grey[700],
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              '11hrs 5mins',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                color: Colors.grey[700],
+                color: Colors.black,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -694,7 +703,7 @@ class _FollowUpRefinementScreenState extends State<FollowUpRefinementScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: ScreenUtils.height * 0.014),
                   Row(
                     children: [
                       Container(
@@ -821,10 +830,7 @@ class _FollowUpRefinementScreenState extends State<FollowUpRefinementScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFE5E5E5), width: 1),
-        ),
+        color: Color(0xFFFFFAF7),
       ),
       child: Row(
         children: [
@@ -832,30 +838,112 @@ class _FollowUpRefinementScreenState extends State<FollowUpRefinementScreen> {
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFFF8F9FA),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFE5E5E5)),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: const Color(0xFF065F46)),
               ),
               child: TextField(
                 controller: _messageController,
                 decoration: InputDecoration(
                   hintText: 'Follow up to refine',
                   hintStyle: GoogleFonts.inter(
-                    color: Colors.grey[500],
-                    fontSize: 14,
+                      color: Color(0xFF776F69),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
                   ),
-                  border: InputBorder.none,
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(color: const Color(0xFF065F46)),
+                  ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,
                   ),
-                  suffixIcon: GestureDetector(
-                    onTap: _isListening ? _stopListening : _startListening,
-                    child: Icon(
-                      _isListening ? Icons.mic : Icons.mic_none,
-                      color:
-                          _isListening ? Colors.red : const Color(0xFF3BAB8C),
-                      size: 20,
-                    ),
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // // Test button (temporary)
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     setState(() {
+                      //       _messageController.text = 'Test speech recognition';
+                      //       _messageController.selection =
+                      //           TextSelection.fromPosition(
+                      //         TextPosition(
+                      //             offset: _messageController.text.length),
+                      //       );
+                      //     });
+                      //   },
+                      //   child: Container(
+                      //     padding: const EdgeInsets.all(4),
+                      //     child: const Icon(
+                      //       Icons.text_fields,
+                      //       color: Colors.blue,
+                      //       size: 16,
+                      //     ),
+                      //   ),
+                      // ),
+                      // // Direct speech test button
+                      // GestureDetector(
+                      //   onTap: () async {
+                      //     print('🎤 Direct speech test starting...');
+                      //     final speechToText = SpeechToText();
+                      //     final available = await speechToText.initialize();
+                      //     print('🎤 Direct test - available: $available');
+                      //     if (available) {
+                      //       await speechToText.listen(
+                      //         onResult: (result) {
+                      //           print(
+                      //               '🎤 Direct test result: "${result.recognizedWords}"');
+                      //           setState(() {
+                      //             _messageController.text =
+                      //                 result.recognizedWords;
+                      //           });
+                      //         },
+                      //         listenFor: const Duration(seconds: 10),
+                      //         partialResults: true,
+                      //       );
+                      //     }
+                      //   },
+                      //   child: Container(
+                      //     padding: const EdgeInsets.all(4),
+                      //     child: const Icon(
+                      //       Icons.record_voice_over,
+                      //       color: Colors.green,
+                      //       size: 16,
+                      //     ),
+                      //   ),
+                      // ),
+                      // // Speech test widget button
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     showDialog(
+                      //       context: context,
+                      //       builder: (context) => const SpeechTestWidget(),
+                      //     );
+                      //   },
+                      //   child: Container(
+                      //     padding: const EdgeInsets.all(4),
+                      //     child: const Icon(
+                      //       Icons.science,
+                      //       color: Colors.orange,
+                      //       size: 16,
+                      //     ),
+                      //   ),
+                      // ),
+                      // Microphone button
+                      GestureDetector(
+                        onTap: _isListening ? _stopListening : _startListening,
+                        child: Icon(
+                          _isListening ? Icons.mic_off : Icons.mic,
+                          color: _isListening
+                              ? Colors.red
+                              : const Color(0xFF065F46),
+                          size: 28,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 maxLines: null,
@@ -871,13 +959,14 @@ class _FollowUpRefinementScreenState extends State<FollowUpRefinementScreen> {
               width: 48,
               height: 48,
               decoration: const BoxDecoration(
-                color: Color(0xFF3BAB8C),
+                color: Color(0xFF065F46),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.send,
+              child: Image.asset(
+                AppImage.send,
+                height: 20,
+                width: 20,
                 color: Colors.white,
-                size: 20,
               ),
             ),
           ),
