@@ -325,7 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       );
                       // Navigate to home screen
-                      context.go('/home');
+                      context.go(HomeScreen.path);
                     } else if (state is LoginFailure) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
