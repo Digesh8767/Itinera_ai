@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -27,12 +28,35 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>itinera_ai</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Firebase Config -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA0E6bSxM8d_5LdViRhZbY7uWHau6m-2-E",
+      authDomain: "itinera-ai-17bb9.firebaseapp.com",
+      projectId: "itinera-ai-17bb9",
+      storageBucket: "itinera-ai-17bb9.firebasestorage.app",
+      messagingSenderId: "440298503063",
+      appId: "1:440298503063:web:dc6843303f5065b81862d2",
+      measurementId: "G-X6EN2LV9Z6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+  </script>
 </head>
+
 <body>
+  <script src="flutter.js" defer></script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
+
 </html>
